@@ -27,8 +27,8 @@ migrate = Migrate(app, db)
 def index():
     return render_template('index.html')
 
-@app.route('/number')
-def show_random_number():
+@app.route('/number', methods=('POST',))
+def generate_number():
     number = random.randrange(0, 9)
     return render_template('index.html', number=number)
 

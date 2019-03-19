@@ -14,7 +14,9 @@
           </h2>
         </div>
         <div class="card-footer text-muted">
-          <a href="{{ url_for('.show_random_number') }}" class="btn btn-primary">Get Number</a>
+          <form action="{{ url_for('.generate_number') }}" method="POST">
+            <button class="btn btn-primary">Get Number</button>
+          </form>
         </div>
       </div>
     </div>
