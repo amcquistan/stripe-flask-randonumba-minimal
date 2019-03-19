@@ -3,4 +3,4 @@ webapp/randonumba.sqlite
 webapp/__pycache__
 webapp/randonumba/__pycache__
 webapp/migrations/__pycache__
-
+webapp/migrations/versions/__pycache__
