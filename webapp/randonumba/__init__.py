@@ -1,8 +1,9 @@
 # randonumba/__init__.py
 from datetime import datetime
 import os
+import random
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -18,9 +19,18 @@ app.config.update(
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+#####################
+# View Functions    #
+#####################
+
 @app.route('/')
 def index():
-    return "Howdy from RandoNumba"
+    return render_template('index.html')
+
+@app.route('/number')
+def show_random_number():
+    number = random.randrange(0, 9)
+    return render_template('index.html', number=number)
 
 #####################
 # Data Model        #
