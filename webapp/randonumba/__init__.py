@@ -13,10 +13,12 @@ BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 load_dotenv(verbose=True, dotenv_path=os.path.join(BASE_DIR, '.env'))
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
+DB_URI = 'sqlite:///{}'.format(os.path.join(BASE_DIR, 'randonumba.sqlite'))
+
 app = Flask(__name__)
 app.config.update(
   SQLALCHEMY_TRACK_MODIFICATIONS=False,
-  SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(BASE_DIR, 'randonumba.sqlite')
+  SQLALCHEMY_DATABASE_URI=DB_URI
 )
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -31,11 +33,7 @@ def index():
 
 @app.route('/number', methods=('POST',))
 def generate_number():
-    import pdb; pdb.set_trace()
-    purchase = Purchase.make_anonymous_purchase(
-      request.form['stripeToken'],
-      'Random Number Purchase'
-    )
+    purchase = Purchase.make_anonymous_purchase(request.form['stripeToken'])
     if purchase:
         number = RandomNumber(value=random.randrange(0, 9), purchase_id=purchase.id)
         db.session.add(number)
@@ -68,9 +66,14 @@ class Purchase(db.Model):
     numbers = db.relationship('RandomNumber', backref='purchase', lazy=True)
 
     @classmethod
-    def make_anonymous_purchase(cls, stripe_token, description):
+    def make_anonymous_purchase(cls, stripe_token):
         try:
-            charge = stripe.Charge.create(amount=100, currency='usd', description=description, source=stripe_token)
+            charge = stripe.Charge.create(
+              amount=100,
+              currency='usd',
+              description='Random Number Purchase',
+              source=stripe_token
+            )
             if charge.status != 'failed':
                 purchase = Purchase(credits=1, stripe_id=charge.id)
                 db.session.add(purchase)
