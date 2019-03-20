@@ -15,6 +15,8 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 DB_URI = 'sqlite:///{}'.format(os.path.join(BASE_DIR, 'randonumba.sqlite'))
 
+DB_URI = 'sqlite:///{}'.format(os.path.join(BASE_DIR, 'randonumba.sqlite'))
+
 app = Flask(__name__)
 app.config.update(
   SQLALCHEMY_TRACK_MODIFICATIONS=False,
