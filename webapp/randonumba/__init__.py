@@ -11,10 +11,12 @@ BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 
 load_dotenv(verbose=True, dotenv_path=os.path.join(BASE_DIR, '.env'))
 
+DB_URI = 'sqlite:///{}'.format(os.path.join(BASE_DIR, 'randonumba.sqlite'))
+
 app = Flask(__name__)
 app.config.update(
   SQLALCHEMY_TRACK_MODIFICATIONS=False,
-  SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URI')
+  SQLALCHEMY_DATABASE_URI=DB_URI
 )
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
