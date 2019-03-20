@@ -15,7 +15,18 @@
         </div>
         <div class="card-footer text-muted">
           <form action="{{ url_for('.generate_number') }}" method="POST">
-            <button class="btn btn-primary">Get Number</button>
+            <!-- <button class="btn btn-primary">Get Number</button> -->
+            <script
+              src="https://checkout.stripe.com/checkout.js"
+              class="stripe-button"
+              data-key="{{ stripe_pub_key }}"
+              data-label="Buy Number $1"
+              data-amount="100"
+              data-name="RandoNumba"
+              data-description="Random Number Purchase"
+              data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+              data-locale="auto">
+            </script>
           </form>
         </div>
       </div>
