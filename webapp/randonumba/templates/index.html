@@ -14,24 +14,147 @@
           </h2>
         </div>
         <div class="card-footer text-muted">
-          <form action="{{ url_for('.generate_number') }}" method="POST">
-            <!-- <button class="btn btn-primary">Get Number</button> -->
-            <script
-              src="https://checkout.stripe.com/checkout.js"
-              class="stripe-button"
-              data-key="{{ stripe_pub_key }}"
-              data-label="Buy Number $1"
-              data-amount="100"
-              data-name="RandoNumba"
-              data-description="Random Number Purchase"
-              data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-              data-locale="auto">
-            </script>
+          <button class="btn btn-primary" id='get-number-btn'>Get Number</button>
+          <form action="{{ url_for('.generate_number') }}" method="POST" id='get-number-form'>
+            <input type="hidden" name="stripeEmail" id="stripeEmail" value="">
+            <input type="hidden" name="stripeToken" id="stripeToken" value="">
+            <input type="hidden" name="stripePurchaseAmount" id="stripePurchaseAmount" value="1">
           </form>
+          
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- add login or guest purchase modal -->
+<div class="modal" id="login-or-guest-purchase-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Login or Continue As Guest?</h3>
+      </div>
+
+      <div class="modal-body">
+        <p>Click Login to either login / signup to buy random number credits 
+          or you can make a one time $1 purchase for a single random number as a guest.</p>
+      </div>
+
+      <div class="modal-footer">
+        <p>
+          <button class="btn btn-danger" data-dismiss="modal">Close</button>
+          <a href="{{ url_for('.show_login') }}" class="btn btn-info">
+            Login / Sign Up
+          </a>
+          <button class="btn btn-primary" data-dismiss="modal" id='guest-payment-info-btn'>Guest Purchase</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- add buy credits modal for logged in users -->
+<div class="modal" id="buy-credits-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Buy Credits for Random Numbers</h3>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="email">Credits</label>
+          <input type="number" min="1" id="credits-to-buy" class="form-control">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <p>
+          <button class="btn btn-danger" data-dismiss="modal">Close</button>
+          <button class="btn btn-primary" data-dismiss="modal" id='user-payment-info-btn'>Buy Credits</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+$(function(){
+  // initialize variables containing info on the current user
+  var isAuthenticated = {{ current_user.is_authenticated | tojson }};
+  var userCredits = 0;
+  {% if current_user.is_authenticated %}
+  userCredits = {{ current_user.credits | tojson }};
+  {% endif %}
+  
+  // cache a reference to the from that posts to the generate_number view function
+  // as well as it's hiddend inputs
+  var $genNumberForm = $('#get-number-form');
+  var $stripePurchaseAmount = $('#stripePurchaseAmount');
+  var $stripeToken = $('#stripeToken');
+  var $stripeEmail = $('#stripeEmail');
+
+  // wireup a click handler for the Get Number button
+  $('#get-number-btn').click(function(evt){
+    if (isAuthenticated) {
+      if (userCredits > 0) {
+        $genNumberForm.submit();
+      } else {
+        $('#buy-credits-modal').modal('show');
+      }
+    } else {
+      $('#login-or-guest-purchase-modal').modal('show')
+    }
+    evt.preventDefault();
+  });
+
+  // configure and instantiate the StripeCheckout object to be
+  // used to handle the request / response of posting payment data
+  var stripeHandler = StripeCheckout.configure({
+    key: '{{ stripe_pub_key }}',
+    locale: 'auto',
+    token: function(token) {
+      $stripeEmail.val(token.email);
+      $stripeToken.val(token.id);
+      $genNumberForm.submit();
+    }
+  });
+
+  // wireup click handler for guest purchase
+  $('#guest-payment-info-btn').click(function(evt){
+    $stripePurchaseAmount.val(100);
+    stripeHandler.open({
+      name: 'RandoNumba',
+      description: 'Guest Purchase',
+      amount: 100
+    });
+  });
+
+  // cache a reference to credits input in logged in user credits modal
+  var $creditsToBuy = $('#credits-to-buy');
+
+  // wire up click handler for logged in user credits purchase
+  $('#user-payment-info-btn').click(function(evt){
+    if ($creditsToBuy.val() > 0) {
+      $stripePurchaseAmount.val(parseInt($creditsToBuy.val()) * 100);
+      stripeHandler.open({
+        name: 'RandoNumba',
+        description: 'Purchase of ' + $creditsToBuy.val() + ' credits',
+        amount: $stripePurchaseAmount.val()
+      });
+    }
+  });
+
+  // Close Checkout on page navigation:
+  window.addEventListener('popstate', function() {
+    stripeHandler.close();
+  });
+});
+</script>
 
 {% endblock %}
