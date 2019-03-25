@@ -17,4 +17,4 @@ There are three tags for this application which demonstrate three different leve
 
 * 0.0.1 - simply the basic application which will generate random numbers and has no Stripe intregration 
 * 0.0.2 - provides the ability for one off purchase by generating a Stripe charge using the stock Stripe checkout button
-* 0.0.3 - utilizes custom JQuery / JavaScript to control Stripe checkout and provides the ability for one off purchase by generating Stripe charges
+* 0.0.3 - utilizes custom JQuery / JavaScript to control Stripe checkout and provides the ability for one off purchase by generating Stripe charges for one time buys or purchasing of credits for authenticated users
